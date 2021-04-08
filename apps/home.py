@@ -2,22 +2,12 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 # from data.create_data import create_table
-from rpy2.robjects.packages import importr
 from tempfile import NamedTemporaryFile
 import pdf2image
 from datetime import datetime
+import pytesseract
 
 from helper_functions import get_data_from_txt
-
-import rpy2.robjects as ro
-package_name = ('tesseract')
-try:
-    pkg = importr(package_name)
-except:
-    ro.r(f'install.packages("{package_name}")')
-    pkg = importr(package_name)
-
-
 
 
 def app():
@@ -34,7 +24,9 @@ def app():
     def get_text(file):
         # img_path = r"C:\Users\Parth\Downloads\document-page2\document-page2-1.jpg"
 
-        txt= pkg.ocr(file)
+        # txt= pkg.ocr(file)
+        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+        txt = pytesseract.image_to_string(file)
         return txt
 
     if data_file:
