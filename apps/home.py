@@ -1,57 +1,110 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-# from data.create_data import create_table
 from tempfile import NamedTemporaryFile
 import pdf2image
 from datetime import datetime
 import pytesseract
 
-from helper_functions import get_data_from_txt
+from helper_functions import get_data_from_txt, get_loyalist_data, get_napanee_data
 
 # for server
 # pytesseract.pytesseract.tesseract_cmd = '/app/.apt/usr/bin/tesseract'
 # for local 
 # pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
+
+
+def get_text(file):
+            txt = pytesseract.image_to_string(file)
+            return txt
+
+
+
 def app():
 
-    st.title('About')
+    st.title('Extract Image')
 
     st.set_option('deprecation.showfileUploaderEncoding', False)
 
-    data_file = st.file_uploader("Upload a file with above mention specifications.", type=['.xlsx', '.xls', 'csv',".pdf", ".png", ".jpg"])
-    
-    temp_file = NamedTemporaryFile(delete=False)
-    
-    
-    def get_text(file):
-        # img_path = r"C:\Users\Parth\Downloads\document-page2\document-page2-1.jpg"
+    ############## Side bar ####################################
+    provider_options = ["Loyalist Township", "Greater Nepanee"]
+    provider = st.sidebar.selectbox("Select Provider:", 
+    provider_options)
+    data_file = None
+    if provider:
+        #############  LOYALIST ############
+        if provider == provider_options[0]:
+            data_file = st.file_uploader("Upload a file with above mention specifications.", type=[".png", ".jpg"])
+            temp_file = NamedTemporaryFile(delete=False)
 
-        txt = pytesseract.image_to_string(file)
-        return txt
+            if data_file:
 
-    if data_file:
-        # data = upload.read()
+                img = data_file.read()
+                st.image(img, use_column_width = True)
+
+                temp_file.write(data_file.getvalue())
+
+                flag = 0
+                if flag == 0:
+                    converted_txt = str(get_text(temp_file.name))
+                    flag = 1
+                # st.write(type(converted_txt))
+                data = get_loyalist_data(converted_txt)
+
+                df = pd.DataFrame(data, index=[0])
+                st.dataframe(df)
+
+
+        ############  NAPANEE #############
+        if provider == provider_options[1]:
+            # st.write("Under Development!")
+            data_file = st.file_uploader("Upload a file with above mention specifications.", type=[".png", ".jpg"])
+            temp_file = NamedTemporaryFile(delete=False)
+
+            if data_file:
+
+                img = data_file.read()
+                st.image(img, use_column_width = True)
+
+                temp_file.write(data_file.getvalue())
+
+                flag = 0
+                if flag == 0:
+                    converted_txt = str(get_text(temp_file.name))
+                    flag = 1
+                # st.write(type(converted_txt))
+                data = get_napanee_data(converted_txt)
+
+                df = pd.DataFrame(data, index=[0])
+                st.dataframe(df)
         
         
-        temp_file.write(data_file.getvalue())
+        
 
-        flag = 0
-        if flag == 0:
-            converted_txt = str(get_text(temp_file.name))
-            flag = 1
-        # st.write(type(converted_txt))
-        data = get_data_from_txt(converted_txt)
+        # if data_file:
 
-        st.write(data)
+        #     temp_file.write(data_file.getvalue())
 
+        #     flag = 0
+        #     if flag == 0:
+        #         converted_txt = str(get_text(temp_file.name))
+        #         flag = 1
+        #     # st.write(type(converted_txt))
+        #     data = get_loyalist_data(converted_txt)
 
+        #     df = pd.DataFrame(data, index=[0])
+        #     st.dataframe(df)
 
+        #     if data:
+        #         st.text_input("From:", df["From"].values[0])
+        #         st.text_input("To:", df["To"].values[0])
+        #         st.text_input("Consuption:", df["consumption"].values[0])
+        #         st.text_input("Amount:", df["amount"].values[0])
+        #         submit = st.button("Submit")
 
-        # PDF to Image
-        # img = pdf2image.convert_from_bytes(data_file.read())
-        # st.write(get_text(img))
+        #         if submit:
+        #             st.success("Record Saved!")
 
 
 
